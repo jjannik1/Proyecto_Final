@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Productos{% endblock %}
+
+{% block content %}
+<h2>Productos en Inventario</h2>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Precio ($)</th>
+            <th>Stock</th>
+            <th>Categoría</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for producto in productos %}
+        <tr>
+            <td>{{ producto.id }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.precio }}</td>
+            <td>
+                {% if producto.stock == 0 %}
+                    <span class="agotado">Agotado</span>
+                {% else %}
+                    {{ producto.stock }}
+                {% endif %}
+            </td>
+            <td>{{ producto.categoria }}</td>
+            <td>
+                <a href="{{ url_for('detalle_producto', id_producto=producto._id) }}">Ver detalle</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

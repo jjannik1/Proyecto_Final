@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Lista de Usuarios{% endblock %}
+{% block content %}
+<h1>Usuarios Registrados</h1>
+<table>
+    <tr><th>Nombre</th><th>Email</th><th>Fecha de Registro</th></tr>
+    {% for cliente in clientes %}
+    <tr>
+        <td>{{ cliente.nombre }}</td>
+        <td>{{ cliente.email }}</td>
+        <td>{{ cliente.fecha_registro.strftime('%d/%m/%Y %H:%M') }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
