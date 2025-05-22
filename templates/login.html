@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<h1>Login</h1>
+{% if mensaje %}
+<p style="color:red;">{{ mensaje }}</p>
+{% endif %}
+<form method="post">
+    <label>Email:</label><input type="email" name="email" required><br>
+    <label>Contraseña:</label><input type="password" name="contraseña" required><br>
+    <button type="submit">Entrar</button>
+</form>
+<p><a href="{{ url_for('registro_usuario') }}">Registrarse</a></p>
+{% endblock %}
