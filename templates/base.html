@@ -13,6 +13,7 @@
             {% if session.get('usuario_id') %}
                 <li><a href="{{ url_for('ver_productos') }}">Productos</a></li>
                 <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                <li> <a href="{{ url_for('ver_carrito') }}">Carrito</a></li>
                 
                 {% elif session.rol == 'admin' %}
                 <a href="{{ url_for('dashboard') }}">Panel Admin</a>

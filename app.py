@@ -1,8 +1,8 @@
-
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from pymongo import MongoClient
 from datetime import date, datetime
 from bson.objectid import ObjectId
+from passlib.hash import pbkdf2_sha256
 
 class Usuario:
     def __init__(self, nombre, email, contraseña, fecha_registro, activo, pedidos, rol="Cliente"):
@@ -42,27 +42,33 @@ fecha = date.today()
 ##################### TiendaOnlineMejorado ##########################################
 #####################################################################################
 
-@app.route("/login", methods=["GET", "POST"])
+
+
+
+@app.route("/", methods=["GET", "POST"])
 def login():
-    mensaje = ""
     if request.method == "POST":
         email = request.form["email"]
         contraseña = request.form["contraseña"]
-        user = app.db.clientes.find_one({"email": email, "contraseña": contraseña})
 
-        if user:
+        # Buscar usuario por email en la base de datos
+        user = app.db.clientes.find_one({"email": email})
+
+        # Verificar si el usuario existe y la contraseña es correcta
+        if user and pbkdf2_sha256.verify(contraseña, user["contraseña"]):
             session["usuario_id"] = str(user["_id"])
             session["rol"] = user["rol"]
             session["nombre"] = user["nombre"]
 
+            # Redirigir según el rol del usuario
             if user["rol"] == "admin":
                 return redirect(url_for("dashboard"))
             else:
                 return redirect(url_for("ver_productos"))
         else:
-            mensaje = "Correo o contraseña incorrectos."
+            flash("Correo o contraseña incorrectos.")
 
-    return render_template("login.html", mensaje=mensaje, fecha=fecha)
+    return render_template("login.html",fecha=fecha)
 
 @app.route("/logout")
 def logout():
@@ -166,6 +172,7 @@ def detalle_producto(id_producto):
 @app.route("/registro-usuario", methods=["GET", "POST"])
 def registro_usuario():
     mensaje = ""
+
     if request.method == "POST":
         nombre = request.form["nombre"]
         email = request.form["email"]
@@ -174,17 +181,20 @@ def registro_usuario():
         pedidos = int(request.form.get("pedidos", 0))
         rol = "cliente"
 
+        
         if app.db.clientes.find_one({"email": email}):
             mensaje = "El email ya está registrado."
         else:
-            nuevo_usuario = Usuario(nombre, email, contraseña, datetime.now(), activ, pedidos)
+            hashed_password = pbkdf2_sha256.hash(contraseña)
+            nuevo_usuario = Usuario(
+                nombre, email, hashed_password, datetime.now(), activ, pedidos
+            )
             app.db.clientes.insert_one(nuevo_usuario.diccionario())
-            mensaje = "Usuario registrado con éxito."
-            
+            flash("Usuario registrado con éxito.")
+            return redirect(url_for("login"))  
 
-        
-        
     return render_template("registro_usuario.html", mensaje=mensaje, fecha=fecha)
+
 
 
 @app.route("/usuarios")

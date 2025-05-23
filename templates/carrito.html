@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Carrito de Compras{% endblock %}
+{% block content %}
+<h1>Carrito de {{ session.nombre }}</h1>
+{% if carrito %}
+    <ul>
+    {% for item in carrito %}
+        <li>{{ item.nombre }} - Cantidad: {{ item.cantidad }} - Precio unitario: ${{ item.precio }}</li>
+    {% endfor %}
+    </ul>
+    <p><strong>Total: ${{ total }}</strong></p>
+{% else %}
+    <p>Tu carrito está vacío.</p>
+{% endif %}
+<p><a href="{{ url_for('ver_productos') }}">Seguir comprando</a></p>
+<p><a href="{{ url_for('logout') }}">Cerrar sesión</a></p>
+{% endblock %}
