@@ -3,12 +3,41 @@
 {% block content %}
 <h1>Carrito de {{ session.nombre }}</h1>
 {% if carrito %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
     <ul>
     {% for item in carrito %}
-        <li>{{ item.nombre }} - Cantidad: {{ item.cantidad }} - Precio unitario: ${{ item.precio }}</li>
+        <li>{{ item.nombre }} - Cantidad: {{ item.cantidad }} - Precio unitario: ${{ item.precio }}
+
+            <form action="{{ url_for('restar_producto', producto_id=item.producto_id) }}" method="POST" style="display:inline;">
+                <button type="submit">–</button>
+            </form>
+
+            <form action="{{ url_for('sumar_producto', producto_id=item.producto_id) }}" method="POST" style="display:inline;">
+                <button type="submit">+</button>
+            </form>
+
+            <form action="{{ url_for('eliminar_del_carrito', producto_id=item.producto_id) }}" method="POST" style="display:inline;">
+                <button type="submit">Eliminar</button>
+            </form>
+        </li>
     {% endfor %}
     </ul>
     <p><strong>Total: ${{ total }}</strong></p>
+
+    <form action="{{ url_for('vaciar_carrito') }}" method="POST">
+        <button type="submit">Vaciar carrito</button>
+    </form>
+
 {% else %}
     <p>Tu carrito está vacío.</p>
 {% endif %}

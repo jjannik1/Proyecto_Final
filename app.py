@@ -179,7 +179,6 @@ def registro_usuario():
         contraseña = request.form["contraseña"]
         activ = request.form.get("actividad", "True") == "True"
         pedidos = int(request.form.get("pedidos", 0))
-        rol = "cliente"
 
         
         if app.db.clientes.find_one({"email": email}):
@@ -190,6 +189,8 @@ def registro_usuario():
                 nombre, email, hashed_password, datetime.now(), activ, pedidos
             )
             app.db.clientes.insert_one(nuevo_usuario.diccionario())
+            app.db.carritos.insert_one({"usuario_id": app.db.clientes.find_one({"email": email})["_id"],"productos": []})
+
             flash("Usuario registrado con éxito.")
             return redirect(url_for("login"))  
 
@@ -211,41 +212,147 @@ def ver_carrito():
     if "usuario_id" not in session:
         return redirect(url_for("login"))
 
-    usuario_id = session["usuario_id"]
-    usuario = app.db.clientes.find_one({"_id": ObjectId(usuario_id)})
-    carrito = usuario.get("carrito", [])
+    usuario_id = ObjectId(session["usuario_id"])
+    carrito = app.db.carritos.find_one({"usuario_id": usuario_id})    
+    productos = carrito.get("productos", []) if carrito else []
+    total = sum(item["precio"] * item["cantidad"] for item in productos)
 
-    total = sum(item["precio"] * item["cantidad"] for item in carrito)
+    return render_template("carrito.html", carrito=productos, total=total, fecha=fecha)
 
-    return render_template("carrito.html", carrito=carrito, total=total, fecha=fecha)
 
-@app.route("/agregar-al-carrito/<id_producto>")
+#Agregar producto al carrito
+
+@app.route("/agregar-al-carrito/<id_producto>", methods=['POST'])
 def agregar_al_carrito(id_producto):
     if "usuario_id" not in session:
         return redirect(url_for("login"))
 
+    
+    #Necesitamos el id del usuario para poder coger su carrito por eso cogemos del usuario que esta en la sesion su id y despues buscamos la id del usuario en la tabla carritos y coger su carrito
+    usuario_id = ObjectId(session["usuario_id"])
+    carrito = app.db.carritos.find_one({"usuario_id": usuario_id})
+
     producto = app.db.productos.find_one({"_id": ObjectId(id_producto)})
     if producto:
-        usuario = app.db.clientes.find_one({"_id": ObjectId(session["usuario_id"])})
-        carrito = usuario.get("carrito", [])
+        productos = carrito["productos"]
         encontrado = False
-        for item in carrito:
-            if item["id"] == producto["id"]:
-                item["cantidad"] += 1
+
+
+        for item in productos:
+            if item["producto_id"] == producto["_id"]:
+                if item["cantidad"] < producto["stock"]:
+                    item["cantidad"] += 1
+                    flash("Producto actualizado en el carrito.")
+                else:
+                    flash("No hay suficiente stock disponible.")
                 encontrado = True
                 break
+            
         if not encontrado:
-            carrito.append({
-                "id": producto["id"],
-                "nombre": producto["nombre"],
-                "precio": producto["precio"],
-                "cantidad": 1
-            })
-        app.db.clientes.update_one(
-            {"_id": ObjectId(usuario["_id"])},
-            {"$set": {"carrito": carrito}}
+            if producto["stock"] > 0:
+                productos.append({
+                    "producto_id": producto["_id"],
+                    "nombre": producto["nombre"],
+                    "precio": producto["precio"],
+                    "cantidad": 1
+                })
+                flash("Producto agregado al carrito.")
+            else:
+                flash("Producto sin stock disponible.")
+
+        app.db.carritos.update_one(
+            {"usuario_id": usuario_id},
+            {"$set": {"productos": productos}}
         )
-    return redirect(url_for("ver_productos"))
+    
+    flash("Producto agregado al carrito.")
+    return redirect(url_for("detalle_producto", id_producto=id_producto))
+
+
+#Eliminar producto del carrito
+
+@app.route("/eliminar-del-carrito/<producto_id>", methods=["POST"])
+def eliminar_del_carrito(producto_id):
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+    
+    usuario_id = ObjectId(session["usuario_id"])
+    app.db.carritos.update_one(
+        {"usuario_id": usuario_id},
+        {"$pull": {"productos": {"producto_id": ObjectId(producto_id)}}}
+    )
+    flash("Producto eliminado del carrito.")
+    return redirect(url_for("ver_carrito"))
+
+    
+#Quitar cantidad del producto que esta en el carrito
+@app.route("/restar-producto/<producto_id>", methods=["POST"])
+def restar_producto(producto_id):
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+    
+    usuario_id = ObjectId(session["usuario_id"])
+    carrito = app.db.carritos.find_one({"usuario_id": usuario_id})
+    productos = carrito["productos"]
+    for item in productos:
+        if str(item["producto_id"]) == producto_id:
+            item["cantidad"] -= 1
+            if item["cantidad"] <= 0:
+                productos.remove(item)
+            break
+
+    app.db.carritos.update_one(
+        {"usuario_id": usuario_id},
+        {"$set": {"productos": productos}}
+    )
+
+    return redirect(url_for("ver_carrito"))
+
+#Agregar cantidad del producto que esta en el carrito
+@app.route("/sumar-producto/<producto_id>", methods=["POST"])
+def sumar_producto(producto_id):
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+    
+    producto = app.db.productos.find_one({"_id": ObjectId(producto_id)})
+
+    usuario_id = ObjectId(session["usuario_id"])
+    carrito = app.db.carritos.find_one({"usuario_id": usuario_id})
+    productos = carrito["productos"]
+
+    for item in productos:
+        if str(item["producto_id"]) == producto_id:
+            stock_disponible = producto["stock"]
+            cantidad_actual = item["cantidad"]
+
+            if cantidad_actual < stock_disponible:
+                item["cantidad"] += 1
+            else:
+                flash("No hay suficciente stock disponible")
+        break
+
+    app.db.carritos.update_one(
+        {"usuario_id": usuario_id},
+        {"$set": {"productos": productos}}
+    )
+
+    return redirect(url_for("ver_carrito"))
+
+
+#Vaciar el carrito entero
+@app.route("/vaciar-carrito", methods=["POST"])
+def vaciar_carrito():
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+    
+    usuario_id = ObjectId(session["usuario_id"])
+    app.db.carritos.update_one(
+        {"usuario_id": usuario_id},
+        {"$set": {"productos": []}}
+    )
+    flash("Carrito vaciado")
+    return redirect(url_for("ver_carrito"))
+
 
 @app.errorhandler(404)
 def pagina_no_encontrada(e):

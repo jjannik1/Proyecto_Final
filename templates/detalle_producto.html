@@ -13,5 +13,9 @@
     </li>
     <li>Categoría: {{ producto.categoria }}</li>
 </ul>
+<form action="{{ url_for('agregar_al_carrito', id_producto=producto._id) }}" method="post">
+    <button type="submit" class="btn btn-primary">Agregar al carrito</button>
+</form>
+
 <a href="{{ url_for('ver_productos') }}">Volver a la lista</a>
 {% endblock %}
