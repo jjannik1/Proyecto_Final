@@ -5,11 +5,20 @@
 <table>
     <tr><th>Nombre</th><th>Email</th><th>Fecha de Registro</th></tr>
     {% for cliente in clientes %}
+
+    {% if cliente.nombre != 'administrador' %}
     <tr>
         <td>{{ cliente.nombre }}</td>
         <td>{{ cliente.email }}</td>
         <td>{{ cliente.fecha_registro.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>
+            <form action="{{ url_for('eliminar_usuario', usuario_id=cliente._id) }}" method="POST" style="display:inline;">
+                <button type="submit">Eliminar</button>
+            </form>
+        </td>
     </tr>
+    {% else %}
+    {% endif %}
     {% endfor %}
 </table>
 {% endblock %}

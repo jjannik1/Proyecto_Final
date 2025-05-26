@@ -10,21 +10,27 @@
         <h1>TecnoMarket</h1>
        <nav>
             <ul>
+
+            {% if session.rol == 'admin' %}
+                <li><a href="{{ url_for('dashboard') }}">Panel Admin</a></li>
+                <li><a href="{{ url_for('anadir_producto') }}">Añadir Producto</a></li>
+                <li><a href="{{ url_for('lista_usuarios') }}">Usuarios</a></li>
+            {% else %}
+            {% endif %}
+
             {% if session.get('usuario_id') %}
                 <li><a href="{{ url_for('ver_productos') }}">Productos</a></li>
                 <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                <li> <a href="{{ url_for('ver_carrito') }}">Carrito</a></li>
-                
-                {% elif session.rol == 'admin' %}
-                <a href="{{ url_for('dashboard') }}">Panel Admin</a>
-                <a href="{{ url_for('anadir_producto') }}">Añadir Producto</a>
-                <a href="{{ url_for('anadir_admin') }}">Añadir Administrador</a>
-                <li><a href="{{ url_for('lista_usuarios') }}">Usuarios</a></li>
 
-        {% else %}
+
+            {% else %}
                 <li><a href="{{ url_for('login')}}">Iniciar sesion</a></li>
                 <li><a href="{{ url_for('registro_usuario')}}">Registrarse</a></li>
-        {% endif %}
+            {% endif %}
+            {% if session.rol == 'Cliente' %}
+                <li> <a href="{{ url_for('ver_carrito') }}">Carrito</a></li>
+            {% else %}
+            {% endif %}
             </ul>
         </nav>  
     </header>

@@ -47,6 +47,13 @@ fecha = date.today()
 
 @app.route("/", methods=["GET", "POST"])
 def login():
+
+    if len(session) > 0 :
+        if session["rol"] == "admin":
+                return redirect(url_for("dashboard"))
+        else:
+                return redirect(url_for("ver_productos"))
+    
     if request.method == "POST":
         email = request.form["email"]
         contraseña = request.form["contraseña"]
@@ -69,6 +76,15 @@ def login():
             flash("Correo o contraseña incorrectos.")
 
     return render_template("login.html",fecha=fecha)
+
+
+@app.route("/inicia_admin")
+def inicia_admin():
+    return redirect(url_for("dashboard"))
+
+@app.route("/inicia_cliente")
+def inicia_cliente():
+    return redirect(url_for("ver_productos"))
 
 @app.route("/logout")
 def logout():
@@ -206,6 +222,11 @@ def lista_usuarios():
     clientes = [cliente for cliente in app.db.clientes.find({})]
     return render_template("lista_usuarios.html", clientes=clientes, fecha=fecha)
 
+@app.route("/eliminar-usuario/<usuario_id>" , methods=['POST'])
+def eliminar_usuario(usuario_id):
+    app.db.clientes.delete_one({"_id": ObjectId(usuario_id)})
+    app.db.carritos.delete_one({"usuario_id": ObjectId(usuario_id)})
+    return redirect(url_for("lista_usuarios"))
 
 @app.route("/carrito")
 def ver_carrito():

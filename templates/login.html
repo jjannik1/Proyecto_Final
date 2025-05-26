@@ -11,10 +11,15 @@
         </ul>
         {% endif %}
          {% endwith %}
-<form method="post">
+
+
+  <form method="post">
     <label>Email:</label><input type="email" name="email" required><br>
     <label>Contraseña:</label><input type="password" name="contraseña" required><br>
     <button type="submit">Entrar</button>
-</form>
-<p><a href="{{ url_for('registro_usuario') }}">Registrarse</a></p>
+  </form>
+  <p><a href="{{ url_for('registro_usuario') }}">Registrarse</a></p>
+
+
 {% endblock %}
+º
