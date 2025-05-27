@@ -17,9 +17,15 @@
                 <li><a href="{{ url_for('lista_usuarios') }}">Usuarios</a></li>
             {% else %}
             {% endif %}
+            
+            {% if session.rol == 'Cliente' %}
+                <li> <a href="{{ url_for('ver_carrito') }}">Carrito</a></li>
+            {% else %}
+            {% endif %}
 
             {% if session.get('usuario_id') %}
                 <li><a href="{{ url_for('ver_productos') }}">Productos</a></li>
+                <li><a href="{{ url_for('ver_pedidos') }}">Pedidos</a></li>
                 <li><a href="{{ url_for('logout') }}">Logout</a></li>
 
 
@@ -27,10 +33,7 @@
                 <li><a href="{{ url_for('login')}}">Iniciar sesion</a></li>
                 <li><a href="{{ url_for('registro_usuario')}}">Registrarse</a></li>
             {% endif %}
-            {% if session.rol == 'Cliente' %}
-                <li> <a href="{{ url_for('ver_carrito') }}">Carrito</a></li>
-            {% else %}
-            {% endif %}
+            
             </ul>
         </nav>  
     </header>

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Lista de Pedidos{% endblock %}
+{% block content %}
+<h1>Pedidos Realizados</h1>
+    {% for pedido in pedidos_usuario %}
+
+    <ul>
+        <li>{{ pedido._id }}</li>
+        <li>{{ pedido.Nombre }}</li>
+
+        {% for producto in pedido.productos%}
+            <li>{{ producto.nombre}}</li>
+            <li>{{ producto.precio}}</li>
+            <li>{{ producto.cantidad}}</li>
+        {% endfor %}
+
+        <li>{{ pedido.total }}</li>
+        <li>{{ pedido.estado }}</li>
+
+            
+        </ul>
+            
+    {% endfor %}
+{% endblock %}

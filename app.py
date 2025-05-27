@@ -47,13 +47,9 @@ fecha = date.today()
 
 @app.route("/", methods=["GET", "POST"])
 def login():
-
-    if len(session) > 0 :
-        if session["rol"] == "admin":
-                return redirect(url_for("dashboard"))
-        else:
-                return redirect(url_for("ver_productos"))
     
+    session.clear()
+
     if request.method == "POST":
         email = request.form["email"]
         contraseña = request.form["contraseña"]
@@ -74,17 +70,10 @@ def login():
                 return redirect(url_for("ver_productos"))
         else:
             flash("Correo o contraseña incorrectos.")
-
+                
+        
     return render_template("login.html",fecha=fecha)
 
-
-@app.route("/inicia_admin")
-def inicia_admin():
-    return redirect(url_for("dashboard"))
-
-@app.route("/inicia_cliente")
-def inicia_cliente():
-    return redirect(url_for("ver_productos"))
 
 @app.route("/logout")
 def logout():
@@ -99,11 +88,8 @@ def dashboard():
 
     productos = [producto for producto in app.db.productos.find({})]
     clientes = [cliente for cliente in app.db.clientes.find({})]
-    pedidos = [
-        {"cliente": "Ana Torres", "total": 120.00, "fecha": "2025-05-01"},
-        {"cliente": "Marta López", "total": 340.50, "fecha": "2025-05-03"},
-        {"cliente": "Luis Rivas", "total": 75.00, "fecha": "2025-05-04"}
-    ]
+    pedidos = [pedidos for pedidos in app.db.pedidos.find({})]
+    
 
     total_stock = sum(producto["stock"] for producto in productos)
     clientes_activos = sum(1 for cliente in clientes if cliente["activo"])
@@ -112,8 +98,9 @@ def dashboard():
     for cliente in clientes:
         if cliente["pedidos"] > cliente_pedido["pedidos"]:
             cliente_pedido = cliente
-
-    total = sum(pedido["total"] for pedido in pedidos)
+    total=0
+    for pedido in pedidos:
+        total += pedido["total"]
 
     return render_template(
         "dashboard.html",
@@ -137,17 +124,8 @@ def anadir_producto():
 
     mensaje = None
     if request.method == "POST":
-        productos = [producto for producto in app.db.productos.find({})]
-
-        id_mas_alto = 0
-        for producto in productos:
-            if "id" in producto and producto["id"] > id_mas_alto:
-                id_mas_alto = producto["id"]
-
-        nuevo_id = id_mas_alto + 1
 
         nuevo_producto = {
-            "id": nuevo_id,
             "nombre": request.form["nombre"],
             "precio": float(request.form["precio"]),
             "stock": int(request.form["stock"]),
@@ -194,7 +172,7 @@ def registro_usuario():
         email = request.form["email"]
         contraseña = request.form["contraseña"]
         activ = request.form.get("actividad", "True") == "True"
-        pedidos = int(request.form.get("pedidos", 0))
+        pedidos = 0
 
         
         if app.db.clientes.find_one({"email": email}):
@@ -208,6 +186,7 @@ def registro_usuario():
             app.db.carritos.insert_one({"usuario_id": app.db.clientes.find_one({"email": email})["_id"],"productos": [], "total": 0})
 
             flash("Usuario registrado con éxito.")
+            
             return redirect(url_for("login"))  
 
     return render_template("registro_usuario.html", mensaje=mensaje, fecha=fecha)
@@ -236,10 +215,15 @@ def ver_carrito():
     usuario_id = ObjectId(session["usuario_id"])
     carrito = app.db.carritos.find_one({"usuario_id": usuario_id})    
     productos = carrito.get("productos", []) if carrito else []
-    total = carrito.get("total")
+    total = sum(item["precio"] * item["cantidad"] for item in productos)
+    
+    app.db.carritos.update_one(
+            {"usuario_id": usuario_id},
+            {"$set": {"total": total}},
+        )
 
 
-    return render_template("carrito.html", carrito=productos, total=total, fecha=fecha)
+    return render_template("carrito.html", carrito=productos, usuario_id=usuario_id, total=total, fecha=fecha)
 
 
 #Agregar producto al carrito
@@ -282,11 +266,10 @@ def agregar_al_carrito(id_producto):
             else:
                 flash("Producto sin stock disponible.")
 
-        total = sum(item["precio"] * item["cantidad"] for item in productos)
+        
         app.db.carritos.update_one(
             {"usuario_id": usuario_id},
             {"$set": {"productos": productos}},
-            {"$set": {"total": total}}
         )
     
     flash("Producto agregado al carrito.")
@@ -375,6 +358,50 @@ def vaciar_carrito():
         {"$set": {"productos": []}}
     )
     flash("Carrito vaciado")
+    return redirect(url_for("ver_carrito"))
+
+@app.route("/pedidos")
+def ver_pedidos():
+    if len(session) > 0 :
+        if session["rol"] == "admin":
+                pedidos = [pedidos for pedidos in app.db.pedidos.find({})]
+
+                return render_template("lista_pedidos_admin.html", pedidos=pedidos,fecha=fecha)
+        else:
+                pedidos_usuario = []
+                pedidos = [pedidos for pedidos in app.db.pedidos.find({})]
+                sesion = ObjectId(session["usuario_id"])
+                for pedido in pedidos:
+                    usuario_id = ObjectId(pedido["usuario_id"])
+                    if ObjectId(usuario_id) == ObjectId(sesion):
+                        pedidos_usuario.append(pedido)
+                return render_template("lista_pedidos_clientes.html", pedidos_usuario=pedidos_usuario , fecha=fecha)
+
+@app.route("/comprar/<usuario_id>" , methods=["POST"])
+def comprar(usuario_id):
+    carrito = app.db.carritos.find_one({"usuario_id": ObjectId(usuario_id)})
+    productos = carrito.get("productos", []) if carrito else []
+    id_usuario = ObjectId(session["usuario_id"])
+    nombre = session["nombre"]
+    estado = "Preparacion"
+
+    pedido = {
+        "Nombre" : nombre,
+        "usuario_id": ObjectId(id_usuario) ,
+        "productos":productos,
+        "total": float(carrito["total"]) ,
+        "estado" :estado
+    }
+    app.db.pedidos.insert_one(pedido)
+    app.db.carritos.update_one(
+        {"usuario_id": ObjectId(usuario_id)},
+        {"$set": {"productos": []}}
+    )
+    clientes = app.db.clientes.find_one({"_id": ObjectId(usuario_id)})
+    app.db.clientes.update_one(
+        {"_id": ObjectId(usuario_id)},
+        {"$set": {"pedidos": clientes["pedidos"] + 1}}
+    )
     return redirect(url_for("ver_carrito"))
 
 

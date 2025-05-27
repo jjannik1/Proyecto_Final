@@ -34,6 +34,10 @@
     </ul>
     <p><strong>Total: ${{ total }}</strong></p>
 
+    <form action="{{ url_for('comprar', usuario_id=usuario_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Estas seguro de comprar')">
+      <button type="submit">Comprar</button>
+    </form>
+
     <form action="{{ url_for('vaciar_carrito') }}" method="POST">
         <button type="submit">Vaciar carrito</button>
     </form>
