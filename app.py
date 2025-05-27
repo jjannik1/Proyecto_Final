@@ -205,7 +205,7 @@ def registro_usuario():
                 nombre, email, hashed_password, datetime.now(), activ, pedidos
             )
             app.db.clientes.insert_one(nuevo_usuario.diccionario())
-            app.db.carritos.insert_one({"usuario_id": app.db.clientes.find_one({"email": email})["_id"],"productos": []})
+            app.db.carritos.insert_one({"usuario_id": app.db.clientes.find_one({"email": email})["_id"],"productos": [], "total": 0})
 
             flash("Usuario registrado con éxito.")
             return redirect(url_for("login"))  
@@ -236,7 +236,8 @@ def ver_carrito():
     usuario_id = ObjectId(session["usuario_id"])
     carrito = app.db.carritos.find_one({"usuario_id": usuario_id})    
     productos = carrito.get("productos", []) if carrito else []
-    total = sum(item["precio"] * item["cantidad"] for item in productos)
+    total = carrito.get("total")
+
 
     return render_template("carrito.html", carrito=productos, total=total, fecha=fecha)
 
@@ -281,9 +282,11 @@ def agregar_al_carrito(id_producto):
             else:
                 flash("Producto sin stock disponible.")
 
+        total = sum(item["precio"] * item["cantidad"] for item in productos)
         app.db.carritos.update_one(
             {"usuario_id": usuario_id},
-            {"$set": {"productos": productos}}
+            {"$set": {"productos": productos}},
+            {"$set": {"total": total}}
         )
     
     flash("Producto agregado al carrito.")
