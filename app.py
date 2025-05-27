@@ -384,13 +384,15 @@ def comprar(usuario_id):
     id_usuario = ObjectId(session["usuario_id"])
     nombre = session["nombre"]
     estado = "Preparacion"
+    fecha = datetime.now()
 
     pedido = {
         "Nombre" : nombre,
         "usuario_id": ObjectId(id_usuario) ,
         "productos":productos,
         "total": float(carrito["total"]) ,
-        "estado" :estado
+        "estado" :estado,
+        "fecha" : fecha
     }
     app.db.pedidos.insert_one(pedido)
     app.db.carritos.update_one(
@@ -402,6 +404,25 @@ def comprar(usuario_id):
         {"_id": ObjectId(usuario_id)},
         {"$set": {"pedidos": clientes["pedidos"] + 1}}
     )
+
+    productos2 = [producto for producto in app.db.productos.find({})]
+
+    diccionario_stock = {}
+
+    for producto2 in productos2:
+
+        diccionario_stock[ObjectId(producto2["_id"])] = producto2["stock"]
+
+    print(diccionario_stock)
+    for producto in productos:
+
+       
+        stock = int(diccionario_stock[ObjectId(producto["producto_id"])])
+
+        app.db.productos.update_one(
+            {"_id": ObjectId(producto["producto_id"])},
+            {"$set": {"stock": stock - int(producto["cantidad"])}}
+        )
     return redirect(url_for("ver_carrito"))
 
 
