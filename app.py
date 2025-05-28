@@ -142,13 +142,20 @@ def anadir_producto():
 def ver_productos():
     if "usuario_id" not in session:
         return redirect(url_for("login"))
+    
+    categoria_filtro = request.args.get("categoria")
+    diccionario = {}
+    if categoria_filtro:
+        diccionario["categoria"] = categoria_filtro
 
-    productos_cursor = app.db.productos.find()
+
+    categorias = app.db.productos.distinct("categoria")
+
+    productos_cursor = app.db.productos.find(diccionario)
     productos = []
     for producto in productos_cursor:
-        producto["_id"] = str(producto["_id"])
         productos.append(producto)
-    return render_template("lista_productos.html", productos=productos, fecha=fecha)
+    return render_template("lista_productos.html", productos=productos, fecha=fecha, categoria_filtro=categoria_filtro, categorias=categorias)
 
 
 @app.route("/productos/<id_producto>")
@@ -332,7 +339,7 @@ def agregar_al_carrito(id_producto):
         )
     
     flash("Producto agregado al carrito.")
-    return redirect(url_for("detalle_producto", id_producto=id_producto))
+    return redirect(url_for("ver_productos", id_producto=id_producto))
 
 
 #Eliminar producto del carrito
@@ -395,7 +402,7 @@ def sumar_producto(producto_id):
                 item["cantidad"] += 1
             else:
                 flash("No hay suficciente stock disponible")
-        break
+            break
 
     app.db.carritos.update_one(
         {"usuario_id": usuario_id},

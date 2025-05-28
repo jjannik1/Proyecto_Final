@@ -3,50 +3,101 @@
 {% block title %}Lista de Productos{% endblock %}
 
 {% block content %}
-<h2>Productos en Inventario</h2>
-
-<table border="1">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Precio ($)</th>
-            <th>Stock</th>
-            <th>Categoría</th>
-            <th>Detalle</th>
-        </tr>
-    </thead>
-    <tbody>
+<div>
+    <h2>Productos en Inventario</h2>
+</div>
+<div>
+    <form action="{{ url_for('ver_productos')}}" method="get">
+        <label>Filtrar por categoría:</label>
+        <select name="categoria">
+            <option value="">Todas</option>
+            
+            {% for categoria in categorias %}
+                {% if categoria == categoria_filtro %}
+                    <option value="{{ categoria }}" selected="selected">{{ categoria }}</option>
+                {% else %}
+                    <option value="{{ categoria }}">{{ categoria }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        
+        <button type="submit">Filtrar</button>
+    </form>
+</div>
+{% if session.rol == "admin"%}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Precio ($)</th>
+                <th>Stock</th>
+                <th>Categoría</th>
+                <th>Detalle</th>
+            </tr>
+        </thead>
+        <tbody>
         {% for producto in productos %}
-        <tr>
-            <td>{{ producto.id }}</td>
-            <td>{{ producto.nombre }}</td>
-            <td>{{ producto.precio }}</td>
-            <td>
+
+                <tr>
+                    <td>{{ producto.nombre }}</td>
+                    <td>{{ producto.precio }}</td>
+                    <td>
+                        {% if producto.stock == 0 %}
+                            <span class="agotado">Agotado</span>
+                        {% else %}
+                            {{ producto.stock }}
+                        {% endif %}
+                    </td>
+                    <td>{{ producto.categoria }}</td>
+                    <td>
+                        <a href="{{ url_for('detalle_producto', id_producto=producto._id) }}">Ver detalle</a>
+                    </td>
+                    <td>
+                        <form action="{{ url_for('cambiar', producto_id=producto._id) }}" method="POST" style="display:inline;" >
+                            Nuevo precio: <input type="number" name="precio" id="precio" step="0.01" >    
+                            Nuevo stock: <input type="number" name="stock" id="stock" > 
+                            <button type="submit">Cambiar</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form action="{{ url_for('eliminar_producto', producto_id=producto._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Estas seguro de eliminar')">
+                            <button type="submit">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            
+                
+        {% endfor %}
+        </tbody>
+    </table>
+
+{%else%}
+{% for producto in productos %}
+    <div>
+        <ul>
+            <li >
+                <strong>Nombre:</strong> {{ producto.nombre }} <br>
+                <strong>Precio:</strong> ${{ producto.precio }} <br>
+                <strong>Stock:</strong> 
                 {% if producto.stock == 0 %}
                     <span class="agotado">Agotado</span>
                 {% else %}
                     {{ producto.stock }}
-                {% endif %}
-            </td>
-            <td>{{ producto.categoria }}</td>
-            <td>
-                <a href="{{ url_for('detalle_producto', id_producto=producto._id) }}">Ver detalle</a>
-            </td>
-            <td>
-                <form action="{{ url_for('cambiar', producto_id=producto._id) }}" method="POST" style="display:inline;" >
-                    Nuevo precio: <input type="number" name="precio" id="precio" step="0.01" >    
-                    Nuevo stock: <input type="number" name="stock" id="stock" > 
-                    <button type="submit">Cambiar</button>
+                {% endif %} <br>
+                <strong>Categoría:</strong> {{ producto.categoria }} <br>
+
+                <form action="{{ url_for('detalle_producto', id_producto=producto._id) }}" method="post">
+                    <button type="submit">Ver detalle</button>
                 </form>
-            </td>
-            <td>
-                <form action="{{ url_for('eliminar_producto', producto_id=producto._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Estas seguro de eliminar')">
-                    <button type="submit">Eliminar</button>
-                </form>
-            </td>
-        </tr>
-        
-        {% endfor %}
-    </tbody>
-</table>
+                
+                <form action="{{ url_for('agregar_al_carrito', id_producto=producto._id) }}" method="post">
+                    <button type="submit" class="btn btn-primary">Agregar al carrito</button>
+                </form><br>
+                
+            </li>
+        </ul>
+    </div>
+{% endfor %}
+
+{%endif%}
 {% endblock %}

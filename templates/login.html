@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Login{% endblock %}
 {% block content %}
+<div>
 <h1>Login</h1>
 {% with messages = get_flashed_messages() %}
       {% if messages %}
@@ -20,6 +21,5 @@
   </form>
   <p><a href="{{ url_for('registro_usuario') }}">Registrarse</a></p>
 
-
+</div>
 {% endblock %}
-º

@@ -1,18 +1,22 @@
 {% extends 'base.html' %}
 {% block title %}Detalle del Producto{% endblock %}
 {% block content %}
-<h1>{{ producto.nombre }}</h1>
-<ul>
-    <li>Precio: {{ producto.precio }}</li>
-    <li>Stock: 
-        {% if producto.stock == 0 %}
-            <span class="agotado">Agotado</span>
-        {% else %}
-            {{ producto.stock }}
-        {% endif %}
-    </li>
-    <li>Categoría: {{ producto.categoria }}</li>
-</ul>
+<div>
+    <h1>{{ producto.nombre }}</h1>
+</div>
+<div>
+    <ul>
+        <li>Precio: {{ producto.precio }}</li>
+        <li>Stock: 
+            {% if producto.stock == 0 %}
+                <span class="agotado">Agotado</span>
+            {% else %}
+                {{ producto.stock }}
+            {% endif %}
+        </li>
+        <li>Categoría: {{ producto.categoria }}</li>
+    </ul>
+</div>
 
 {% if session.rol == 'Cliente' %}
     <form action="{{ url_for('agregar_al_carrito', id_producto=producto._id) }}" method="post">
@@ -20,6 +24,7 @@
     </form>
 {% else %}
 {% endif %}
-
-<a href="{{ url_for('ver_productos') }}">Volver a la lista</a>
+<form action="{{ url_for('ver_productos')}}">
+    <button type="submit">Volver a la lista</button>
+</form>
 {% endblock %}
