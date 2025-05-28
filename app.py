@@ -161,7 +161,50 @@ def detalle_producto(id_producto):
         return render_template("detalle_producto.html", producto=producto, fecha=fecha)
     else:
         return render_template("404.html", fecha=fecha), 404
+    
+@app.route("/cambiar/<producto_id>" ,  methods=['POST'])
+def cambiar(producto_id):
 
+    nuevo_precio = 0.00
+    nuevo_stock = 0
+
+    if request.form["precio"]:
+        nuevo_precio = float(request.form["precio"])
+    if request.form["stock"]:
+        nuevo_stock = int(request.form["stock"])
+
+    if nuevo_precio != 0.00 and nuevo_stock != 0:
+
+        app.db.productos.update_one(
+            {"_id": ObjectId(producto_id)},
+            {"$set": {"stock": nuevo_stock}}
+        )
+
+        app.db.productos.update_one(
+            {"_id": ObjectId(producto_id)},
+            {"$set": {"precio": nuevo_precio}}
+        )
+    elif nuevo_precio != 0.00 :
+
+        app.db.productos.update_one(
+            {"_id": ObjectId(producto_id)},
+            {"$set": {"precio": nuevo_precio}}
+        )
+    
+    elif nuevo_stock != 0:
+        app.db.productos.update_one(
+            {"_id": ObjectId(producto_id)},
+            {"$set": {"stock": nuevo_stock}}
+        )
+    else:
+        pass
+
+    return redirect(url_for("ver_productos"))
+
+@app.route("/eliminar-producto/<producto_id>" , methods=['POST'])
+def eliminar_producto(producto_id):
+    app.db.producto.delete_one({"_id": ObjectId(producto_id)})
+    return redirect(url_for("ver_productos"))
 
 @app.route("/registro-usuario", methods=["GET", "POST"])
 def registro_usuario():
@@ -205,6 +248,22 @@ def lista_usuarios():
 def eliminar_usuario(usuario_id):
     app.db.clientes.delete_one({"_id": ObjectId(usuario_id)})
     app.db.carritos.delete_one({"usuario_id": ObjectId(usuario_id)})
+    return redirect(url_for("lista_usuarios"))
+
+@app.route("/activar/<usuario_id>" , methods=['POST'])
+def activar(usuario_id):
+    app.db.clientes.update_one(
+        {"_id": ObjectId(usuario_id)},
+        {"$set": {"activo": True}}
+    )
+    return redirect(url_for("lista_usuarios"))
+
+@app.route("/desactivar/<usuario_id>" , methods=['POST'])
+def desactivar(usuario_id):
+    app.db.clientes.update_one(
+        {"_id": ObjectId(usuario_id)},
+        {"$set": {"activo": False}}
+    )
     return redirect(url_for("lista_usuarios"))
 
 @app.route("/carrito")
@@ -425,6 +484,24 @@ def comprar(usuario_id):
         )
     return redirect(url_for("ver_carrito"))
 
+@app.route("/cancelar/<pedido_id>" , methods=["POST"])
+def cancelar(pedido_id):
+    app.db.pedidos.delete_one({"_id": ObjectId(pedido_id)})
+    pedidos = app.db.pedidos.find_one({"_id": ObjectId(pedido_id) })
+    clientes = app.db.clientes.find_one({"_id": ObjectId(pedidos["id_usuario"])})
+    app.db.clientes.update_one(
+        {"_id": ObjectId(pedidos["id_usuario"])},
+        {"$set": {"pedidos": clientes["pedidos"] - 1}}
+    )
+    return redirect(url_for("ver_pedidos"))
+
+@app.route("/cambiar_estado/<pedido_id>" , methods=["POST"])
+def cambiar_estado(pedido_id):
+    app.db.pedidos.update_one(
+        {"usuario_id": ObjectId(pedido_id)},
+        {"$set": {"estado": "Listo"}}
+    )
+    return redirect("ver_pedidos")
 
 @app.errorhandler(404)
 def pagina_no_encontrada(e):

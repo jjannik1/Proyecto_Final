@@ -32,7 +32,20 @@
             <td>
                 <a href="{{ url_for('detalle_producto', id_producto=producto._id) }}">Ver detalle</a>
             </td>
+            <td>
+                <form action="{{ url_for('cambiar', producto_id=producto._id) }}" method="POST" style="display:inline;" >
+                    Nuevo precio: <input type="number" name="precio" id="precio" step="0.01" >    
+                    Nuevo stock: <input type="number" name="stock" id="stock" > 
+                    <button type="submit">Cambiar</button>
+                </form>
+            </td>
+            <td>
+                <form action="{{ url_for('eliminar_producto', producto_id=producto._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Estas seguro de eliminar')">
+                    <button type="submit">Eliminar</button>
+                </form>
+            </td>
         </tr>
+        
         {% endfor %}
     </tbody>
 </table>

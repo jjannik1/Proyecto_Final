@@ -15,7 +15,12 @@
         <li>{{ pedido.total }}</li>
         <li>{{ pedido.estado }}</li>
 
-            
+        {% if pedido.estado != "Preparacion"%}
+            <form action="{{ url_for('cambiar_estado', pedido_id=pedido._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estas seguro de que esta listo?')">
+                <button type="submit">Cambiar estado a listo</button>
+            </form>
+        {% else %}
+        {% endif %}
         </ul>
             
     {% endfor %}

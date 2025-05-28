@@ -17,6 +17,12 @@
         <li>{{ pedido.total }}</li>
         <li>{{ pedido.estado }}</li>
 
+        {% if pedido.estado == "Preparacion"%}
+            <form action="{{ url_for('cancelar', pedido_id=pedido._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estas seguro de cancelar?')">
+                <button type="submit">Eliminar</button>
+            </form>
+        {% else %}
+        {% endif %}
             
         </ul>
             
