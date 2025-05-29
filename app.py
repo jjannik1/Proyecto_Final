@@ -221,7 +221,7 @@ def registro_usuario():
         nombre = request.form["nombre"]
         email = request.form["email"]
         contraseña = request.form["contraseña"]
-        activ = request.form.get("actividad", "True") == "True"
+        activ = True
         pedidos = 0
 
         
