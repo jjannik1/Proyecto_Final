@@ -493,13 +493,19 @@ def comprar(usuario_id):
 
 @app.route("/cancelar/<pedido_id>" , methods=["POST"])
 def cancelar(pedido_id):
-    app.db.pedidos.delete_one({"_id": ObjectId(pedido_id)})
     pedidos = app.db.pedidos.find_one({"_id": ObjectId(pedido_id) })
-    clientes = app.db.clientes.find_one({"_id": ObjectId(pedidos["id_usuario"])})
+    clientes = app.db.clientes.find_one({"_id": ObjectId(pedidos["usuario_id"])})
+    for productos in pedidos["productos"]:
+        producto = app.db.productos.find_one({"_id": ObjectId(productos["producto_id"])})
+        app.db.productos.update_one(
+            {"_id": ObjectId(productos["producto_id"])},
+            {"$set":{"stock" : producto["stock"] + productos["cantidad"]}}
+        ) 
     app.db.clientes.update_one(
-        {"_id": ObjectId(pedidos["id_usuario"])},
+        {"_id": ObjectId(pedidos["usuario_id"])},
         {"$set": {"pedidos": clientes["pedidos"] - 1}}
     )
+    app.db.pedidos.delete_one({"_id": ObjectId(pedido_id)})
     return redirect(url_for("ver_pedidos"))
 
 @app.route("/cambiar_estado/<pedido_id>" , methods=["POST"])
