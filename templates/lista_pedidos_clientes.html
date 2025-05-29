@@ -2,23 +2,23 @@
 {% block title %}Lista de Pedidos{% endblock %}
 {% block content %}
 <div>
-<h1>Pedidos Realizados</h1>
+    <h3>Pedidos Realizados</h3>
 </div>
     {% for pedido in pedidos_usuario %}
-<div>
-
+<div class="recuadro">
+        <br>
         <ul>
-            <li>{{ pedido._id }}</li>
-            <li>{{ pedido.Nombre }}</li>
+            <li><strong>ID del pedido: </strong> {{ pedido._id }}</li>
+            <li><strong>Nombre del cliente:</strong> {{ pedido.Nombre }}</li>
 
             {% for producto in pedido.productos%}
-                <li>{{ producto.nombre}}</li>
-                <li>{{ producto.precio}}</li>
-                <li>{{ producto.cantidad}}</li>
+                <li><strong>Nombre del producto:</strong> {{ producto.nombre}}</li>
+                <li><strong>Precio del producto:</strong> {{ producto.precio}}</li>
+                <li><strong>Cantidad:</strong> {{ producto.cantidad}}</li>
             {% endfor %}
 
-            <li>{{ pedido.total }}</li>
-            <li>{{ pedido.estado }}</li>
+            <li><strong>Precio total:</strong> {{ pedido.total }}</li>
+            <li><strong>Estado del pedido:</strong>{{ pedido.estado }}</li>
 
             {% if pedido.estado == "Preparacion"%}
                 <form action="{{ url_for('cancelar', pedido_id=pedido._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estas seguro de cancelar?')">
@@ -27,7 +27,8 @@
             {% else %}
             {% endif %}
                 
-            </ul>
+        </ul>
+        <br>
 </div>       
     {% endfor %}
 {% endblock %}

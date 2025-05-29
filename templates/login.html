@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block title %}Login{% endblock %}
 {% block content %}
-<div>
-<h1>Login</h1>
-{% with messages = get_flashed_messages() %}
+<div class="recuadro">
+  <h3 >Login</h3>
+  {% with messages = get_flashed_messages() %}
       {% if messages %}
         <ul>
           {% for message in messages %}
@@ -19,7 +19,7 @@
     <label>Contraseña:</label><input type="password" name="contraseña" required><br>
     <button type="submit">Entrar</button>
   </form>
-  <p><a href="{{ url_for('registro_usuario') }}">Registrarse</a></p>
+  <p><a  class="negro" href="{{ url_for('registro_usuario') }}">Registrarse</a></p>
 
 </div>
 {% endblock %}

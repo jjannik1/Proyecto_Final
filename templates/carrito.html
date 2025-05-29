@@ -2,14 +2,16 @@
 {% block title %}Carrito de Compras{% endblock %}
 {% block content %}
 <div>
-<h1>Carrito de {{ session.nombre }}</h1>
+<h3>Carrito de {{ session.nombre }}</h3>
 {% if carrito %}
 </div>
 
-{% for item in carrito %}
-<div>
+
+<div class="recuadro">
+  <br>
+  {% for item in carrito %}
     <ul>
-    
+        
         <li>{{ item.nombre }} - Cantidad: {{ item.cantidad }} - Precio unitario: ${{ item.precio }}
 
             <form action="{{ url_for('restar_producto', producto_id=item.producto_id) }}" method="POST" style="display:inline;">
@@ -24,28 +26,28 @@
                 <button type="submit">Eliminar</button>
             </form>
         </li>
+        
     </ul>
-  </div>
     {% endfor %}
+    <br>
+  </div>
     
-  <div>
+    
+  <div class="centrado">
     <p><strong>Total: ${{ total }}</strong></p>
   </div>
-    <form action="{{ url_for('comprar', usuario_id=usuario_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estas seguro de hacer la compra?')">
-      <button type="submit">Comprar</button>
-    </form>
+  <form class="centrado"  action="{{ url_for('comprar', usuario_id=usuario_id) }}" method="POST"  onsubmit="return confirm('¿Estas seguro de hacer la compra?')">
+    <button type="submit">Comprar</button>
+  </form>
 
-    <form action="{{ url_for('vaciar_carrito') }}" method="POST">
-        <button type="submit">Vaciar carrito</button>
-    </form>
+  <form class="centrado" action="{{ url_for('vaciar_carrito') }}" method="POST">
+      <button type="submit">Vaciar carrito</button>
+  </form>
 
 {% else %}
-    <p>Tu carrito está vacío.</p>
+    <p class="centrado">Tu carrito está vacío.</p>
 {% endif %}
-<form action="{{url_for('ver_productos')}}">
+<form class="centrado" action="{{url_for('ver_productos')}}">
   <button type="submit">Seguir comprando</button>
-</form>
-<form action="{{url_for('logout')}}">
-  <button type="submit">Cerrar sesión</button>
 </form>
 {% endblock %}

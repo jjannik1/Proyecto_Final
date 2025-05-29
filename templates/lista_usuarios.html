@@ -1,17 +1,23 @@
 {% extends 'base.html' %}
 {% block title %}Lista de Usuarios{% endblock %}
 {% block content %}
-<h1>Usuarios Registrados</h1>
-<table>
-    <tr><th>Nombre</th><th>Email</th><th>Fecha de Registro</th></tr>
+<h3>Usuarios Registrados</h3>
+<table class="quitar">
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Fecha de Registro</th>
+    </tr>
     {% for cliente in clientes %}
 
     {% if cliente.nombre != 'administrador' %}
-    <tr>
+    <tr >
+        <td>{{ cliente._id }}</td>
         <td>{{ cliente.nombre }}</td>
         <td>{{ cliente.email }}</td>
         <td>{{ cliente.fecha_registro.strftime('%d/%m/%Y %H:%M') }}</td>
-        <td>
+        <td class="quitar">
 
             {% if cliente.activo %}
                 <form action="{{ url_for('desactivar', usuario_id=cliente._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estas seguro de desactivarlo?')">
@@ -22,8 +28,7 @@
                     <button type="submit">activar</button>
                 </form>
             {% endif%}
-        </td>
-        <td>
+
             <form action="{{ url_for('eliminar_usuario', usuario_id=cliente._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Estas seguro de eliminar')">
                 <button type="submit">Eliminar</button>
             </form>

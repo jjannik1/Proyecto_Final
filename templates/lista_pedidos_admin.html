@@ -1,27 +1,37 @@
 {% extends 'base.html' %}
 {% block title %}Lista de Pedidos{% endblock %}
 {% block content %}
-<h1>Pedidos Realizados</h1>
-    {% for pedido in pedidos %}
 
-    <ul>
-        <li>{{ pedido._id }}</li>
-        <li>{{ pedido.Nombre}}</li>
-        {% for producto in pedido.productos%}
-            <li>{{ producto.nombre}}</li>
-            <li>{{ producto.precio}}</li>
-            <li>{{ producto.cantidad}}</li>
-        {% endfor %}
-        <li>{{ pedido.total }}</li>
-        <li>{{ pedido.estado }}</li>
+<div>
+    <h3>Pedidos Realizados</h3>
+</div>
 
-        {% if pedido.estado != "Preparacion"%}
-            <form action="{{ url_for('cambiar_estado', pedido_id=pedido._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estas seguro de que esta listo?')">
-                <button type="submit">Cambiar estado a listo</button>
-            </form>
-        {% else %}
-        {% endif %}
+{% for pedido in pedidos %}
+    
+    <div class="recuadro">
+        <br>
+        <ul>
+            <li><strong>ID del pedido: </strong> {{ pedido._id }}</li>
+            <li><strong>Nombre del cliente:</strong> {{ pedido.Nombre }}</li>
+
+            {% for producto in pedido.productos%}
+                <li><strong>Nombre del producto:</strong> {{ producto.nombre}}</li>
+                <li><strong>Precio del producto:</strong> {{ producto.precio}}</li>
+                <li><strong>Cantidad:</strong> {{ producto.cantidad}}</li>
+            {% endfor %}
+
+            <li><strong>Precio total:</strong> {{ pedido.total }}</li>
+            <li><strong>Estado del pedido:</strong>{{ pedido.estado }}</li>
+    
+            {% if pedido.estado != "Preparacion"%}
+                <form action="{{ url_for('cambiar_estado', pedido_id=pedido._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estas seguro de que esta listo?')">
+                    <button type="submit">Cambiar estado a listo</button>
+                </form>
+            {% else %}
+            {% endif %}
         </ul>
+        <br>
+    </div>
             
-    {% endfor %}
+{% endfor %}
 {% endblock %}

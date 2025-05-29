@@ -6,44 +6,49 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <header>
-        <h1>TecnoMarket</h1>
-       <nav>
-            <ul>
 
+    <div class="pagina">
+        <header>
+            <h1 class="titulo">TecnoMarket</h1>
+           <nav>
             {% if session.rol == 'admin' %}
-                <li><a href="{{ url_for('dashboard') }}">Panel Admin</a></li>
-                <li><a href="{{ url_for('anadir_producto') }}">Añadir Producto</a></li>
-                <li><a href="{{ url_for('lista_usuarios') }}">Usuarios</a></li>
+                <a href="{{ url_for('dashboard') }}">Panel Admin</a>|
+                <a href="{{ url_for('anadir_producto') }}">Añadir Producto</a>|
+                <a href="{{ url_for('lista_usuarios') }}">Usuarios</a>|
             {% else %}
             {% endif %}
-            
+                
             {% if session.rol == 'Cliente' %}
-                <li> <a href="{{ url_for('ver_carrito') }}">Carrito</a></li>
+                <a href="{{ url_for('ver_carrito') }}">Carrito</a>|
             {% else %}
             {% endif %}
-
+    
             {% if session.get('usuario_id') %}
-                <li><a href="{{ url_for('ver_productos') }}">Productos</a></li>
-                <li><a href="{{ url_for('ver_pedidos') }}">Pedidos</a></li>
-                <li><a href="{{ url_for('logout') }}">Logout</a></li>
-
-
+                <a href="{{ url_for('ver_productos') }}">Productos</a>|
+                <a href="{{ url_for('ver_pedidos') }}">Pedidos</a>|
+                <a href="{{ url_for('logout') }}">Logout</a>
+    
+    
             {% else %}
-                <li><a href="{{ url_for('login')}}">Iniciar sesion</a></li>
-                <li><a href="{{ url_for('registro_usuario')}}">Registrarse</a></li>
+                <a href="{{ url_for('login')}}">Iniciar sesion</a>|
+                <a href="{{ url_for('registro_usuario')}}">Registrarse</a>
             {% endif %}
-            
-            </ul>
-        </nav>  
-    </header>
+                
+        
+            </nav>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+            <br>
 
-    <footer>
-        <p>Desarrollado por Jannik y Alejandro- {{ fecha.year }}</p>
-    </footer>
+        </header>
+    
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    
+        <footer>
+            <p>Desarrollado por Jannik y Alejandro- {{ fecha.year }}</p>
+        </footer>
+    </div>
+    
 </body>
 </html>

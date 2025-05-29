@@ -3,11 +3,6 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h2>Bienvenido, {{ nombre_admin }}</h2>
-<p><strong>Tienda:</strong> {{ tienda }}</p>
-<p><strong>Fecha:</strong> {{ fecha }}</p>
-
-<hr>
 
 <h3>Productos</h3>
 <table border="1">
@@ -23,7 +18,7 @@
     <tbody>
         {% for producto in productos %}
         <tr>
-            <td> {{ producto.id }}</td>
+            <td> {{ producto._id }}</td>
             <td>{{ producto.nombre }}</td>
             <td>{{ producto.precio }}</td>
             <td>
@@ -38,7 +33,7 @@
         {% endfor %}
     </tbody>
 </table>
-<p><strong>Total en stock:</strong> {{ total_stock }}</p>
+<p class="centrado"><strong>Total en stock:</strong> {{ total_stock }}</p>
 
 <hr>
 
@@ -46,6 +41,7 @@
 <table border="1">
     <thead>
         <tr>
+            <th>ID</th>
             <th>Nombre</th>
             <th>Email</th>
             <th>Estado</th>
@@ -55,6 +51,7 @@
     <tbody>
         {% for cliente in clientes %}
         <tr>
+            <td>{{ cliente._id }}</td>
             <td>{{ cliente.nombre }}</td>
             <td>{{ cliente.email }}</td>
             <td>
@@ -69,15 +66,16 @@
         {% endfor %}
     </tbody>
 </table>
-<p><strong>Clientes activos:</strong> {{ clientes_activos }}</p>
-<p><strong>Cliente con más pedidos:</strong> {{ cliente_pedido.nombre }} ({{ cliente_pedido.pedidos }} pedidos)</p>
+<p class="centrado"><strong>Clientes activos:</strong> {{ clientes_activos }}</p>
+<p class="centrado"><strong>Cliente con más pedidos:</strong> {{ cliente_pedido.nombre }} ({{ cliente_pedido.pedidos }} pedidos)</p>
 
 <hr>
 
-<h3>Pedidos recientes</h3>
+<h3>Pedidos</h3>
 <table border="1">
     <thead>
         <tr>
+            <th>ID</th>
             <th>Cliente</th>
             <th>Total ($)</th>
             <th>Fecha</th>
@@ -86,6 +84,7 @@
     <tbody>
         {% for pedido in pedidos %}
         <tr>
+            <td>{{ pedido._id }}</td>
             <td>{{ pedido.Nombre }}</td>
             <td>{{ pedido.total }}</td>
             <td>{{ pedido.fecha }}</td>
@@ -93,6 +92,6 @@
         {% endfor %}
     </tbody>
 </table>
-<p><strong>Total de ingresos:</strong> ${{ total }}</p>
+<p class="centrado"><strong>Total de ingresos:</strong> ${{ total }}</p>
 
 {% endblock %}
